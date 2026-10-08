@@ -1,0 +1,24 @@
+# 签名密钥 —— 绝不入库（证书/私钥/profile 另行安全交付）
+sign/
+*.p12
+*.pem
+*.p7b
+*.cer
+*.csr
+*.keystore
+*.jks
+
+# 广告验收材料内容物（体积大且含设备信息；只保留 README 说明）
+ad-audit/*
+!ad-audit/README.md
+
+# 从 logcat 导出的原始日志
+*.log
+
+# 其它
+.DS_Store
+Thumbs.db
+*.iml
+.idea/
+.vscode/
+node_modules/
