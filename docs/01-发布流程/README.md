@@ -71,7 +71,50 @@ cat /tmp/qa-out/app.json
 
 ---
 
-## 阶段 2 · 构建 `.rpk`（华为快应用 IDE）
+### 方式 C：🆕 **在 macOS 上纯命令行构建 `.rpk`（无需华为快应用 IDE）** ⭐
+
+> **为什么需要这条**：华为快应用 IDE **已无 macOS 版**（官方下载页只提供 Windows）。但其构建内核 `fa-toolkit` 随 IDE 安装包分发、且**自带 darwin 预编译二进制**，可在 macOS 上直接运行。**2026-10-08 已实测跑通并产出合格 `.rpk`。**
+
+```bash
+cd <本仓库>/scripts
+
+# ① 一次性：从官方 Windows 安装包提取工具链（约 185MB 下载，含 SHA256 校验）
+#    需要 innoextract：brew install innoextract
+./extract-toolchain-macos.sh /tmp/qa-toolchain
+
+# ② 每次发版：构建 .rpk
+./build-rpk-macos.sh <uni-app 快应用产物目录> /tmp/qa-toolchain debug     # 真机链路验证
+./build-rpk-macos.sh <uni-app 快应用产物目录> /tmp/qa-toolchain release   # 上架（需正式证书）
+```
+
+产物：`<产物目录>/.quickapp/dist/com.genfee.quickapp[.release].rpk`
+
+**实测结果（2026-10-08，debug）**：249 KB，合法 zip，43 个文件，含
+`manifest.json` / `META-INF/CERT`（签名 4.5KB）/ `pages/**/*.html` + `.pack.js`；
+`manifest.json` 内 `package=com.genfee.quickapp`、`features` 含 `service.ad`、
+`minPlatformVersion=1070` 全部正确。
+
+**四个必须点**（少一个就会失败，均已实测）：
+
+| # | 要点 | 说明 |
+|---|---|---|
+| 1 | `<工程>/node_modules` 必须有 `fa-toolkit` + `webpack` | 工具链 ~317MB，脚本用软链，不复制 |
+| 2 | `<工程>/package.json` 必须存在 | `fa-toolkit` 会 `require(<工程>/package.json)` |
+| 3 | 跑 node 前 **`env -u NODE_OPTIONS`** | 某些宿主会经 `NODE_OPTIONS` 注入 fs 代理，导致 `mkdirSync` 抛 `EEXIST` 假错 |
+| 4 | `QUICK_APP=<含 debugkey/> 的目录>` | `fa-toolkit` 的 `getDefDebugKey()` 从这里读调试证书 |
+
+**签名说明**：
+- 仅**真机链路验证** → 脚本可用内置调试证书，产物 `manifest.json` 里是 `versionType:debug / debug:true`，**可用于加载器调试，不能上架**。
+- **上架** → 必须把**工蜂自己的**快应用证书放进 `<工程>/sign/{certificate.pem,private.pem}`，并用 `versionType=release`。
+  ⚠️ 参考工程曾因 `FORMAL_*` 常量没被引用而**线上跑的是测试广告位 ID**——上架前务必核对。
+
+**合规提醒**：工具链提取自华为官方发布的 Windows 安装包（SHA256 已校验），属**绕过官方分发渠道的变通做法**；对外发布/团队协作前建议确认许可与内部规范。
+
+---
+
+## 阶段 2 · 构建 `.rpk`（华为快应用 IDE，Windows）
+
+> ⚠️ 无 Windows 环境时请用上面的**方式 C**。
 
 1. 华为快应用 IDE 导入上一步产物目录
 2. 配置 **release 签名**（见 `docs/06-签名/`）

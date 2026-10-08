@@ -25,6 +25,7 @@ worker-bee-mini-program-1.0        分支 feature/quickapp-huawei
 | `docs/04-广告验收/` | 鲸鸿动能验收：自检项、《RPK广告位信息表》填写稿、测试广告位 ID |
 | `docs/05-备案/` | 快应用 ICP 备案信息（`-4K` 序列） |
 | `docs/06-签名/` | 签名证书说明（**密钥不入库**） |
+| `scripts/` | 🆕 **macOS 纯命令行构建 `.rpk`**（无需华为快应用 IDE，2026-10-08 实测跑通） |
 | `release/` | 各版本上架 `.rpk` 归档 |
 | `ad-audit/` | 广告验收材料暂存（内容物不上库，只留说明） |
 | `screenshots/` | 商店截图 |
